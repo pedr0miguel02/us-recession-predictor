@@ -1,4 +1,4 @@
-# 🇺🇸 US Recession Predictor
+# US Recession Predictor
 
 Prever, com **12 meses de antecedência**, se a economia dos EUA entra em recessão,
 usando indicadores macro públicos da FRED desde 1970. O alvo é binário (recessão / expansão),
