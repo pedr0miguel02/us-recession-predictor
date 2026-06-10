@@ -81,12 +81,21 @@ Validação **walk-forward** (out-of-sample, ~1998–2025):
 | Random Forest | 0.870 |
 | Logistic Regression | 0.784 |
 
+![Probabilidade prevista de recessão vs. recessões reais](reports/figures/recession_probability.png)
+
+*Probabilidade prevista (12 meses à frente) vs. recessões reais NBER (barras cinzentas). A linha pontilhada marca o início da previsão ao vivo.*
+
 **Leitura dos resultados:**
 
 - Os modelos sinalizaram as recessões de **2001, 2008 e 2020** com meses de antecedência (a probabilidade prevista sobe antes das barras cinzentas).
 - A **inversão da curva de juros de 2022-23** gerou um falso positivo **apenas** na Logistic Regression; XGBoost e Random Forest mantiveram-se baixos — evidência de que os modelos não-lineares foram mais robustos a este sinal ambíguo.
 - **Feature importance:** a taxa de **desemprego** e o **spread 10Y-3M** lideram, seguidos da variação do M2 e do CPI — confirmando o papel clássico da curva de juros e do mercado de trabalho.
 - **Previsão ao vivo:** com os dados mais recentes, o XGBoost estima **~2%** de probabilidade de recessão no próximo ano (território de expansão).
+
+<p align="center">
+  <img src="reports/figures/feature_importance.png" width="48%" alt="Feature importance (XGBoost)" />
+  <img src="reports/figures/roc_curves.png" width="48%" alt="Curvas ROC" />
+</p>
 
 > **Limitação honesta:** como a série `T10Y3M` só existe na FRED desde 1982 e usamos 15 anos de treino mínimo, a janela de teste começa ~1998 — as recessões de 1973, 1981 e 1990 ficam fora da avaliação. Baixar `min_train_months` ou remover `T10Y3M` no `config.yaml` recupera-as.
 
