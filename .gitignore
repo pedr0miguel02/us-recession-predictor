@@ -1,0 +1,20 @@
+# Segredos — NUNCA versionar
+.env
+
+# Dados (re-geráveis via pipeline)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+*.parquet
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+venv/
+.venv/
+
+# Figuras geradas (opcional: comenta se quiseres versionar os outputs no repo)
+# reports/figures/*.png
