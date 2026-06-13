@@ -21,10 +21,14 @@ from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
 
 from .fetch_data import load_config
-from .features import TARGET_COL
+from .features import TARGET_COL, feature_columns
 
 ROOT = Path(__file__).resolve().parents[1]
 PRED_PATH = "data/processed/predictions.parquet"
+
+# Os três modelos do projeto, por ordem de complexidade. Fonte única de verdade
+# (importada também pelo evaluate.py) — evita listas de nomes duplicadas.
+MODEL_NAMES = ["logistic", "random_forest", "xgboost"]
 
 
 def build_models(config: dict) -> dict[str, Pipeline]:
@@ -85,19 +89,9 @@ def walk_forward_split(
     Yields:
         Tuplos (train_idx, test_idx) de arrays numpy de índices inteiros.
 
-    ─────────────────────────────────────────────────────────────────────
-    A TUA VEZ (Learning Mode):
-    Implementa o gerador. Invariante CRÍTICA a garantir: max(train_idx) <
-    min(test_idx) SEMPRE (nunca treinar com dados >= ao teste). O teste em
-    tests/test_train.py verifica exatamente isto.
-    Pista: um `while` sobre uma posição `t` que começa em `min_train`; o treino
-    é `np.arange(0, t)`, o teste é `np.arange(t, t+step)`; incrementa `t += step`
-    até `t >= n_samples`. Atenção a não deixar o último bloco de teste ultrapassar
-    n_samples.
-    Decisão de design: "expanding" (treino cresce sempre) vs "rolling" (janela de
-    tamanho fixo que desliza). Implementa expanding; pensa em que situação rolling
-    seria melhor (mudanças estruturais na economia?).
-    ─────────────────────────────────────────────────────────────────────
+    Invariante garantida: max(train_idx) < min(test_idx) — nunca se treina com
+    dados >= ao bloco de teste (sem fuga de dados). Janela "expanding": o treino
+    cresce a cada passo. Verificado em tests/test_pipeline.py.
     """
     t = min_train
     while t < n_samples:
@@ -113,7 +107,7 @@ def run_walk_forward(df_labelled: pd.DataFrame, config: dict) -> pd.DataFrame:
     Devolve um DataFrame indexado por data com a probabilidade prevista
     out-of-sample de cada modelo (mais a coluna do valor real `target`).
     """
-    feature_cols = [c for c in df_labelled.columns if c not in ("recession", TARGET_COL)]
+    feature_cols = feature_columns(df_labelled)
     X = df_labelled[feature_cols].to_numpy()
     y = df_labelled[TARGET_COL].to_numpy().astype(int)
     idx = df_labelled.index
@@ -151,7 +145,7 @@ def predict_live(df: pd.DataFrame, config: dict) -> pd.DataFrame:
     Devolve um DataFrame com a mesma forma do walk-forward (uma coluna por
     modelo), indexado pelas datas sem label. target/recession ficam NaN.
     """
-    feature_cols = [c for c in df.columns if c not in ("recession", TARGET_COL)]
+    feature_cols = feature_columns(df)
     train = df[df[TARGET_COL].notna()]
     live = df[df[TARGET_COL].isna()]
     if live.empty:
@@ -175,7 +169,7 @@ def main() -> None:
     df_labelled = df[df[TARGET_COL].notna()].copy()
 
     result = run_walk_forward(df_labelled, config)
-    result = result.dropna(how="all", subset=list(build_models(config).keys()))
+    result = result.dropna(how="all", subset=MODEL_NAMES)
 
     # Anexa a previsão ao vivo (futuro) para estender o gráfico até hoje.
     live = predict_live(df, config)

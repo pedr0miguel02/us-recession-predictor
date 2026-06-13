@@ -42,6 +42,7 @@ python -m src.features
 python -m src.train
 python -m src.evaluate
 
+python -m src.predict           # previsao ao vivo (texto) num so comando
 pytest -q                       # testes (target sem fuga + walk-forward)
 ```
 
@@ -56,6 +57,28 @@ config.yaml + .env  →  fetch_data.py  →  data/raw/series.parquet
                                               ↓
                        evaluate.py     →  reports/figures/*.png
 ```
+
+## Como atualizar (dados novos)
+
+Os gráficos são "fotografias" — **não se atualizam sozinhos**. Para os refrescar com
+os dados mais recentes da FRED (que publica novos meses regularmente):
+
+```bash
+python run_pipeline.py          # re-fetch FRED -> retreina -> regenera os graficos
+python -m src.predict           # ve a nova previsao em texto
+```
+
+A fronteira da "previsão ao vivo" no gráfico **avança sozinha** — é calculada a partir
+do último mês com dados, não está fixa. Notas:
+
+- O passado distante fica inalterado; só os últimos ~12-24 meses podem mudar
+  ligeiramente (a FRED **revê** dados recentes).
+- Meses que hoje estão na zona "ao vivo" passam a histórico com rótulo à medida que o
+  desfecho se conhece — por isso a fronteira desloca-se.
+- Para refletir os gráficos novos **no GitHub**, é preciso commit & push (ver abaixo):
+  ```bash
+  git add reports/figures/ && git commit -m "Atualiza graficos" && git push
+  ```
 
 ## Modelos
 

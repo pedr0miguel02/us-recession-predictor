@@ -19,11 +19,10 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score, roc_curve
 
 from .fetch_data import load_config
-from .features import TARGET_COL
-from .train import PRED_PATH, build_models, run_walk_forward
+from .features import TARGET_COL, feature_columns
+from .train import MODEL_NAMES, PRED_PATH, build_models, run_walk_forward
 
 ROOT = Path(__file__).resolve().parents[1]
-MODEL_NAMES = ["logistic", "random_forest", "xgboost"]
 
 
 def compute_auc(preds: pd.DataFrame) -> dict[str, float]:
@@ -103,7 +102,7 @@ def plot_feature_importance(config: dict, out_dir: Path) -> Path | None:
     features — responde a "qual indicador mais previu recessões?"."""
     df = pd.read_parquet(ROOT / config["data"]["processed_path"])
     df = df[df[TARGET_COL].notna()]
-    feature_cols = [c for c in df.columns if c not in ("recession", TARGET_COL)]
+    feature_cols = feature_columns(df)
 
     model = build_models(config)["xgboost"]
     model.fit(df[feature_cols].to_numpy(), df[TARGET_COL].astype(int).to_numpy())

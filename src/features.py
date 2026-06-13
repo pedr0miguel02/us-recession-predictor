@@ -19,6 +19,17 @@ ROOT = Path(__file__).resolve().parents[1]
 # Nome da coluna que vamos prever.
 TARGET_COL = "target"
 
+# Colunas que NÃO são features de input (o alvo e a recessão atual crua).
+NON_FEATURE_COLS = ("recession", TARGET_COL)
+
+
+def feature_columns(df: pd.DataFrame) -> list[str]:
+    """Lista as colunas de features (tudo menos o alvo e a recessão crua).
+
+    Fonte única de verdade — usada no treino, na previsão e na avaliação.
+    """
+    return [c for c in df.columns if c not in NON_FEATURE_COLS]
+
 
 def build_features(df: pd.DataFrame, config: dict) -> pd.DataFrame:
     """Transforma as séries brutas em features de modelação.
@@ -56,17 +67,6 @@ def build_target(df: pd.DataFrame, lag_months: int = 12) -> pd.Series:
     Returns:
         pd.Series com o target binário, mesmo índice de `df`, com NaN nas
         últimas `lag_months` linhas.
-
-    ─────────────────────────────────────────────────────────────────────
-    A TUA VEZ (Learning Mode):
-    Esta é A decisão central do projeto. Implementa o corpo da função.
-    Pista: pandas tem `Series.shift(periods)`. Um shift NEGATIVO puxa valores
-    futuros para o presente. Pensa: para o label de hoje refletir o estado
-    daqui a 12 meses, deslocas por +12 ou -12?
-    Trade-off a considerar: se em vez de "recessão exatamente daqui a N meses"
-    quiseres "recessão em ALGUM momento nos próximos N meses", como mudarias?
-    (rolling máximo numa janela futura — opcional, mas é um upgrade forte).
-    ─────────────────────────────────────────────────────────────────────
     """
     # shift(-lag) puxa o valor de daqui a `lag` meses para a linha de hoje.
     # Assim o label de hoje responde a "haverá recessão dentro de `lag` meses?".
@@ -84,7 +84,7 @@ def main() -> None:
 
     # Remove o aquecimento inicial (NaN das transformações YoY). Mantém as
     # linhas finais sem target — são separadas explicitamente a jusante.
-    feature_cols = [c for c in feats.columns if c not in ("recession", TARGET_COL)]
+    feature_cols = feature_columns(feats)
     feats = feats.dropna(subset=feature_cols)
 
     out = ROOT / config["data"]["processed_path"]
