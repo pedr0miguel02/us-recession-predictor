@@ -68,11 +68,13 @@ def plot_recession_probability(preds: pd.DataFrame, scores: dict, out_dir: Path)
         ax.axvline(boundary, color="black", ls=":", lw=1)
         ax.text(boundary, 0.95, " previsão ao vivo", fontsize=8, va="top")
     ax.set_title("Probabilidade prevista de recessão (12 meses à frente) vs. recessões reais NBER",
-                 fontsize=12)
+                 fontsize=12, pad=30)
     ax.set_ylabel("P(recessão dentro de 12 meses)")
     ax.set_ylim(0, 1)
-    # Legenda fora do gráfico (à direita) para não tapar as linhas dos anos ~2000.
-    ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1), fontsize=9, frameon=False)
+    # Legenda horizontal por cima do gráfico (entre o título e o plot), para não
+    # tapar as linhas dos anos ~2000 nem o título.
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3,
+              fontsize=9, frameon=False)
     ax.margins(x=0.01)
 
     # Eixo X: uma marca por ano (em vez do automático de 4 em 4), rodadas.
