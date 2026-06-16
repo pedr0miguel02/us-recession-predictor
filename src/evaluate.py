@@ -71,7 +71,8 @@ def plot_recession_probability(preds: pd.DataFrame, scores: dict, out_dir: Path)
                  fontsize=12)
     ax.set_ylabel("P(recessão dentro de 12 meses)")
     ax.set_ylim(0, 1)
-    ax.legend(loc="upper left", fontsize=9)
+    # Legenda fora do gráfico (à direita) para não tapar as linhas dos anos ~2000.
+    ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1), fontsize=9, frameon=False)
     ax.margins(x=0.01)
 
     # Eixo X: uma marca por ano (em vez do automático de 4 em 4), rodadas.
@@ -86,7 +87,7 @@ def plot_recession_probability(preds: pd.DataFrame, scores: dict, out_dir: Path)
              ha="right", va="bottom", fontsize=8, color="grey")
     fig.tight_layout(rect=(0, 0.02, 1, 1))
     path = out_dir / "recession_probability.png"
-    fig.savefig(path, dpi=130)
+    fig.savefig(path, dpi=130, bbox_inches="tight")
     plt.close(fig)
     return path
 
