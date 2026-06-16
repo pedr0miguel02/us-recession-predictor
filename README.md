@@ -13,8 +13,7 @@ definido oficialmente pelo NBER.
 
 | Indicador | FRED ID | Porquê |
 |---|---|---|
-| Yield Spread 10Y-2Y | `T10Y2Y` | O preditor de recessão mais famoso |
-| Yield Spread 10Y-3M | `T10Y3M` | Versão preferida da Fed de NY |
+| Yield Spread 10Y-3M | `T10Y3M` | O preditor de recessão preferido da Fed de NY |
 | Taxa de desemprego | `UNRATE` | Lagging mas robusto |
 | Produção industrial | `INDPRO` | Proxy leading de atividade* |
 | CPI (inflação, YoY) | `CPIAUCSL` | Contexto de política monetária |
@@ -23,6 +22,8 @@ definido oficialmente pelo NBER.
 | Confiança do consumidor | `UMCSENT` | Expectativas |
 
 \* O PMI ISM (`NAPM`) foi descontinuado na FRED; usamos produção industrial como proxy leading.
+O spread 10Y-2Y (`T10Y2Y`) foi testado e **removido** por redundância (correlação 0.86
+com o 10Y-3M) — a sua remoção melhorou o AUC (ver Resultados).
 
 **Alvo:** `USREC` (indicador de recessão NBER), deslocado 12 meses → "haverá recessão dentro de 1 ano?".
 
@@ -100,9 +101,9 @@ Validação **walk-forward** (out-of-sample, ~1998–2025):
 
 | Modelo | AUC-ROC |
 |---|---|
-| **XGBoost** | **0.884** |
-| Random Forest | 0.870 |
-| Logistic Regression | 0.784 |
+| **XGBoost** | **0.899** |
+| Random Forest | 0.892 |
+| Logistic Regression | 0.790 |
 
 ![Probabilidade prevista de recessão vs. recessões reais](reports/figures/recession_probability.png)
 
@@ -112,7 +113,8 @@ Validação **walk-forward** (out-of-sample, ~1998–2025):
 
 - Os modelos sinalizaram as recessões de **2001, 2008 e 2020** com meses de antecedência (a probabilidade prevista sobe antes das barras cinzentas).
 - A **inversão da curva de juros de 2022-23** gerou um falso positivo **apenas** na Logistic Regression; XGBoost e Random Forest mantiveram-se baixos — evidência de que os modelos não-lineares foram mais robustos a este sinal ambíguo.
-- **Feature importance:** a taxa de **desemprego** e o **spread 10Y-3M** lideram, seguidos da variação do M2 e do CPI — confirmando o papel clássico da curva de juros e do mercado de trabalho.
+- **Feature importance:** o **spread 10Y-3M** lidera, seguido da taxa de **desemprego**, da variação do M2 e do CPI — confirmando o papel clássico da curva de juros e do mercado de trabalho.
+- **Seleção de features:** removi o spread 10Y-2Y por redundância (correlação 0.86 com o 10Y-3M); o AUC do XGBoost **subiu de 0.884 para 0.899**, mostrando que menos features ≠ pior modelo quando há multicolinearidade.
 - **Previsão ao vivo:** com os dados mais recentes, o XGBoost estima **~2%** de probabilidade de recessão no próximo ano (território de expansão).
 
 <p align="center">

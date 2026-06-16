@@ -11,7 +11,8 @@ data:
 # Séries FRED a recolher. A chave é o nome "amigável" usado no código;
 # o valor é o ID oficial na FRED (https://fred.stlouisfed.org).
 series:
-  yield_10y2y:    "T10Y2Y"      # Spread 10Y-2Y (o preditor clássico)
+  # Nota: o spread 10Y-2Y (T10Y2Y) foi removido por redundância — tinha
+  # correlação 0.86 com o 10Y-3M e a sua remoção melhorou o AUC (ver README).
   yield_10y3m:    "T10Y3M"      # Spread 10Y-3M (versão preferida da Fed de NY)
   unemployment:   "UNRATE"      # Taxa de desemprego (lagging mas robusto)
   industrial:     "INDPRO"      # Produção industrial (proxy leading; NAPM/PMI descontinuado na FRED)

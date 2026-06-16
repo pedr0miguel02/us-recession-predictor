@@ -11,8 +11,10 @@ Uso:
 """
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -71,7 +73,18 @@ def plot_recession_probability(preds: pd.DataFrame, scores: dict, out_dir: Path)
     ax.set_ylim(0, 1)
     ax.legend(loc="upper left", fontsize=9)
     ax.margins(x=0.01)
-    fig.tight_layout()
+
+    # Eixo X: uma marca por ano (em vez do automático de 4 em 4), rodadas.
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", fontsize=7)
+
+    # Carimbo de geração: ajuda a situar a frescura do gráfico.
+    last_data = preds.index.max()
+    fig.text(0.99, 0.01,
+             f"Gerado em {date.today():%Y-%m-%d}  |  dados ate {last_data:%Y-%m}",
+             ha="right", va="bottom", fontsize=8, color="grey")
+    fig.tight_layout(rect=(0, 0.02, 1, 1))
     path = out_dir / "recession_probability.png"
     fig.savefig(path, dpi=130)
     plt.close(fig)
